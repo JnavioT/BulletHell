@@ -1,23 +1,20 @@
 package com.example.bullethell;
 
-
 import android.graphics.RectF;
 
-
 public class Bullet {
-    // A RectF to represent the size and location of the bullet
+    // Una RectF representa el tamaño y la localizacion de la bala
     private RectF mRect;
-    // How fast is the bullet traveling?
+    // Para medir y controlar la velocidad de la bala en la pantalla
     private float mXVelocity;
     private float mYVelocity;
-    // How big is a bullet
+    // Tamaño de la bala
     private float mWidth;
     private float mHeight;
 
-    // The constructor
+    // Constructor
     public Bullet(int screenX){
-        // Configure the bullet based on
-        // the screen width in pixels
+        // El tamaño de la bala en función al tamaño de la pantalla
         mWidth = screenX / 100;
         mHeight = screenX / 100;
         mRect = new RectF();
@@ -25,12 +22,12 @@ public class Bullet {
         mXVelocity = (screenX / 5);
     }
 
-    // Return a reference to the RectF
+    // Regresa la referencia a RectF para calculo de colisiones
     RectF getRect(){
         return mRect;
     }
 
-    // Move the bullet based on the speed and the frame rate
+    // Mover la bala basada en la velocidad y el fps
     void update(long fps){
         // Update the left and top coordinates
         // based on the velocity and current frame rate
@@ -40,16 +37,15 @@ public class Bullet {
         mRect.bottom = mRect.top - mHeight;
     }
 
-    // Reverse the bullets vertical direction
+    // Revertir las direcciones de la bala
     void reverseYVelocity(){
         mYVelocity = -mYVelocity;
     }
-    // Reverse the bullets horizontal direction
     void reverseXVelocity(){
         mXVelocity = -mXVelocity;
     }
 
-    // Spawn a new bullet
+    // Generar una nueva bala, con los datos en mRect
     void spawn(int pX, int pY, int vX, int vY){
         // Spawn the bullet at the location
         // passed in as parameters
@@ -61,9 +57,6 @@ public class Bullet {
         // It's only fair
         mXVelocity = mXVelocity * vX;
         mYVelocity = mYVelocity * vY;
-
-
-
 
     }
 }

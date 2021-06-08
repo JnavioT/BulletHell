@@ -14,26 +14,24 @@ public class BulletHellActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        // Get the screen resolution
+        // Conseguir la resolución de la pantalla
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
-        // Call the constructor(initialize)
-        // the BulletHellGame instance
+        // Llamar al constructor del juego BulletHellGame
         mBHGame = new BulletHellGame(this, size.x,size.y);
         setContentView(mBHGame);
 
     }
 
     @Override
-    // Start the main game thread
-    // when the game is launched
+    // Comienza el hilo principal del juego cuando es lanzado
     protected void onResume() {
         super.onResume();
         mBHGame.resume();
     }
     @Override
-    // Stop the thread when the player quits
+    // Detiene el hilo del juego cuando el jugador se retira
     protected void onPause() {
         super.onPause();
         mBHGame.pause();

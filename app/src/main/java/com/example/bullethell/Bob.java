@@ -18,28 +18,24 @@ public class Bob {
         mRect = new RectF(screenX / 2, screenY / 2,
                 (screenX / 2) + mBobWidth,
                 (screenY / 2) + mBobHeight);
-        // Prepare the bitmap
-        // Load Bob from his .png file
-        // Bob practices responsible encapsulation
-        // looking after his own resources
+
+        // Preparar el bitmap con la imagen .png
         mBitmap = BitmapFactory.decodeResource
                 (context.getResources(), R.drawable.bob2);
     }
 
     boolean teleport(float newX, float newY){
-        // Did Bob manage to teleport?
         boolean success = false;
-        // Move Bob to the new position
-        // If not already teleporting
+        // Mover al personaje cuando no se este teltransportando
         if(!mTeleporting){
-        // Make him roughly central to the touch
+            //newX y newY representan las coordenadas donde se hizo click
+            // se actualiza en función a ello
             mRect.left = newX - mBobWidth / 2;
             mRect.top = newY - mBobHeight / 2;
             mRect.bottom = mRect.top + mBobHeight;
             mRect.right = mRect.left + mBobWidth;
             mTeleporting = true;
-        // Notify BulletHellGame that teleport
-        // attempt was successful
+        // Retorna que se realizo la operacion exitosa a  BulletHellGame
             success = true;
         }
         return success;
@@ -48,11 +44,11 @@ public class Bob {
     void setTelePortAvailable(){
         mTeleporting = false;
     }
-    // Return a reference to mRect
+    // Retorna la referencia de mRect para calculo de colisiones
     RectF getRect(){
         return mRect;
     }
-    // Return a reference to bitmap
+    // Retorna una referencia del bitmap
     Bitmap getBitmap(){
         return mBitmap;
     }

@@ -20,62 +20,62 @@ import java.util.Random;
 
 public class BulletHellGame extends SurfaceView implements Runnable {
 
-    // Are we currently debugging
+    // Para hacer pruebas en pantalla
     boolean mDebugging = true;
-    // Objects for the game loop/thread
+    // Objetos para el bucle del juego
     private Thread mGameThread = null;
     private volatile boolean mPlaying;
     private boolean mPaused = true;
-    // Objects for drawing
+    // Objetos para dibujar
     private SurfaceHolder mOurHolder;
     private Canvas mCanvas;
     private Paint mPaint;
-    // Keep track of the frame rate
+    // Para mantener el seguimiento de la tasa de frames
     private long mFPS;
-    // The number of milliseconds in a second
+    // Constante para calculos de tiempo
     private final int MILLIS_IN_SECOND = 1000;
-    // Holds the resolution of the screen
+    // Para guardar el tamaño de la pantalla
     private int mScreenX;
     private int mScreenY;
 
-    // How big will the text be?
+    // Para el tamaño del texto en pantalla
     private int mFontSize;
     private int mFontMargin;
-    // These are for the sound
+    // Para efectos de sonido
     private SoundPool mSP;
     private int mBeepID = -1;
     private int mTeleportID = -1;
 
-    // Up to 10000 bullets
+    // Juego permite hasta 10000 balas
     private Bullet[] mBullets = new Bullet[10000];
     private int mNumBullets = 0;
     private int mSpawnRate = 1;
     private Random mRandomX = new Random();
     private Random mRandomY = new Random();
 
+    // Objetos del personaje y sus caracteristicas en el juego
     private Bob mBob;
     private boolean mHit = false;
     private int mNumHits;
     private int mShield = 10;
 
-    // Let's time the game
+    // Para medir tiempos del juego
     private long mStartGameTime;
     private long mBestGameTime;
     private long mTotalGameTime;
 
-    // This is the constructor method that gets called
-    // from BulletHellActivity
+
+    // Método constructor que es llamado desde BulletHellActivity
     public BulletHellGame(Context context, int x, int y) {
         super(context);
         mScreenX = x;
         mScreenY = y;
-        // Font is 5% of screen width
+        // Font y Margin en función al tamaño de la pantalla
         mFontSize = mScreenX / 20;
-        // Margin is 2% of screen width
         mFontMargin = mScreenX / 50;
         mOurHolder = getHolder();
         mPaint = new Paint();
-        // Initialize the SoundPool
+        // Para inicializar los métodos de sonido
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             AudioAttributes audioAttributes =
                     new AudioAttributes.Builder()
@@ -98,7 +98,7 @@ public class BulletHellGame extends SurfaceView implements Runnable {
             descriptor = assetManager.openFd("teleport.ogg");
             mTeleportID = mSP.load(descriptor, 0);
         } catch (IOException e) {
-            Log.e("error", "failed to load sound files");
+            Log.e("error", "fallo la carga de sonidos");
         }
         for(int i = 0; i < mBullets.length; i++){
             mBullets[i] = new Bullet(mScreenX);
@@ -109,92 +109,84 @@ public class BulletHellGame extends SurfaceView implements Runnable {
         startGame();
     }
 
-    // Called to start a new game
+    // Llamada a nuevo juego
     public void startGame(){
         mNumHits = 0;
         mNumBullets = 0;
 
         mHit = false;
-        // Did the player survive longer than previously
+
         if(mTotalGameTime > mBestGameTime){
             mBestGameTime = mTotalGameTime;
         }
 
     }
-    // Spawns ANOTHER bullet
+    // Aparicion de nuevas balas
     private void spawnBullet(){
-        // Add one to the number of bullets
+        // se aumenta en 1 el num de balas
         mNumBullets++;
-        // Where to spawn the next bullet
-        // And in which direction should it travel
+        // Se genera la nueva bala y se le da la orientacion tal que no colisione facilmente con el personaje
         int spawnX;
         int spawnY;
         int velocityX;
         int velocityY;
 
-        // Don't spawn to close to Bob
+        // No aparezca cerca del personaje
         if (mBob.getRect().centerX() < mScreenX / 2) {
-            // Bob is on the left
-            // Spawn bullet on the right
+            // Personaje esta a la izquierda entonces la bala aparece a la derecha
             spawnX = mRandomX.nextInt(mScreenX / 2) + mScreenX / 2;
-            // Head right
+            // Y con sentido a la derecha
             velocityX = 1;
         } else {
-            // Bob is on the right
-            // Spawn bullet on the left
+            // Personaje esta a la derecha entonces la bala aparece a la izquierda
             spawnX = mRandomX.nextInt(mScreenX / 2);
-            // Head left
+            //  con sentido a la izquierda
             velocityX = -1;
         }
-            // Don't spawn to close to Bob
+        // No aparezca cerca del personaje , arriba y abajo
         if (mBob.getRect().centerY() < mScreenY / 2) {
-            // Bob is on the top
-            // Spawn bullet on the bottom
+            // Personaje esta arriba
             spawnY = mRandomY.nextInt(mScreenY / 2) + mScreenY / 2;
-            // Head down
+            // Bala con setnido hacia abajo
             velocityY = 1;
         } else {
-            // Bob is on the bottom
-            // Spawn bullet on the top
+            // Personaje esta abajo
             spawnY = mRandomY.nextInt(mScreenY / 2);
-            // head up
+            // Bala con setnido hacia arriba
             velocityY = -1;
 
         }
 
-        // Spawn the bullet
+        // Se crea la bala con los valores indicados
         mBullets[mNumBullets - 1].spawn(spawnX, spawnY, velocityX, velocityY);
     }
-    // Handles the game loop
 
+    // Manejo del bucle del juego
     @Override
     public void run() {
         while (mPlaying) {
             long frameStartTime = System.currentTimeMillis();
             if (!mPaused) {
                 update();
-                // Now all the bullets have been moved
-                // we can detect any collisions
+                // Detectamos colisiones ya que las balas se han movido en update()
                 detectCollisions();
             }
             draw();
-            long timeThisFrame = System.currentTimeMillis()
-                    - frameStartTime;
+            long timeThisFrame = System.currentTimeMillis() - frameStartTime;
             if (timeThisFrame >= 1) {
                 mFPS = MILLIS_IN_SECOND / timeThisFrame;
             }
         }
     }
-    // Update all the game objects
+    // Update actualiza la posición de las balas
     private void update(){
         for(int i = 0; i < mNumBullets; i++){
             mBullets[i].update(mFPS);
         }
     }
-
+    // Detección de colisiones
     private void detectCollisions(){
-        // Has a bullet collided with a wall?
-        // Loop through each active bullet in turn
+        // Se verifica para todas las balas si han chocado con los límites de la pantalla
         for(int i = 0; i < mNumBullets; i++) {
             if (mBullets[i].getRect().bottom > mScreenY) {
                 mBullets[i].reverseYVelocity();
@@ -209,22 +201,20 @@ public class BulletHellGame extends SurfaceView implements Runnable {
                 mBullets[i].reverseXVelocity();
             }
         }
-    /////////////
-        // Has a bullet hit Bob?
-        // Check each bullet for an intersection with Bob's RectF
+        // Se verifica si las balas han chocado con el personaje
         for (int i = 0; i < mNumBullets; i++) {
+            // Sí has sido chocado
             if (RectF.intersects(mBullets[i].getRect(), mBob.getRect())) {
-                // Bob has been hit
+                // Se emite un pitido
                 mSP.play(mBeepID, 1, 1, 0, 0, 1);
-                // This flags that a hit occurred
-                // so that the draw
-                // method "knows" as well
+                // Se habilita la bandera del choque
                 mHit = true;
-                // Rebound the bullet that collided
+                // Se hace que la bala cambie de dirección
                 mBullets[i].reverseXVelocity();
                 mBullets[i].reverseYVelocity();
-                // keep track of the number of hits
+                // Se guarda el número de choques
                 mNumHits++;
+                // Se verifica que la protección del personaje no se haya acabado
                 if (mNumHits == mShield) {
                     mPaused = true;
                     mTotalGameTime = System.currentTimeMillis() - mStartGameTime;
@@ -240,7 +230,7 @@ public class BulletHellGame extends SurfaceView implements Runnable {
             mCanvas = mOurHolder.lockCanvas();
             mCanvas.drawColor(Color.argb(255, 243, 111, 36));
             mPaint.setColor(Color.argb(255, 255, 255, 255));
-            // All the drawing code will go here
+            //Se dibujan las balas
             for(int i = 0; i < mNumBullets; i++) {
                 mCanvas.drawRect(mBullets[i].getRect(), mPaint);
             }
@@ -252,7 +242,7 @@ public class BulletHellGame extends SurfaceView implements Runnable {
                             " Mejor Tiempo: " + mBestGameTime / MILLIS_IN_SECOND,
                         mFontMargin, mFontSize, mPaint);
 
-            // Don't draw the current time when paused
+            // Si se pausa no escribir el tiempo
             if(!mPaused) {
                 mCanvas.drawText("Segundos sobrevividos: " +
                                 ((System.currentTimeMillis() - mStartGameTime) / MILLIS_IN_SECOND),
@@ -268,16 +258,20 @@ public class BulletHellGame extends SurfaceView implements Runnable {
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
+        // Cuando se toca la pantalla
         switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
+                // Se regresa al juego
                 if(mPaused){
                     mStartGameTime = System.currentTimeMillis();
                     mPaused = false;
                 }
+                // se teleporta el personaje
                 if(mBob.teleport(motionEvent.getX(), motionEvent.getY())){
                     mSP.play(mTeleportID, 1, 1, 0, 0, 1);
                 }
                 break;
+                // Al levantar el mouse se genera nueva bala
             case MotionEvent.ACTION_UP:
                 mBob.setTelePortAvailable();
                 spawnBullet();
@@ -285,13 +279,13 @@ public class BulletHellGame extends SurfaceView implements Runnable {
         }
         return true;
     }
-
+    //ciclo de pausa
     public void pause() {
         mPlaying = false;
         try {
             mGameThread.join();
         } catch (InterruptedException e) {
-            Log.e("Error:", "joining thread");
+            Log.e("Error:", "hilo detenido");
         }
     }
 
@@ -306,24 +300,7 @@ public class BulletHellGame extends SurfaceView implements Runnable {
         mPaint.setTextSize(debugSize);
         mCanvas.drawText("FPS: " + mFPS ,
                 10, debugStart + debugSize, mPaint);
-        /*
-        mCanvas.drawText("Bob izquierda: " + mBob.getRect().left ,
-                10, debugStart + debugSize *2, mPaint);
-        mCanvas.drawText("Bob arriba: " + mBob.getRect().top ,
-                10, debugStart + debugSize *3, mPaint);
-        mCanvas.drawText("Bob derecha: " + mBob.getRect().right ,
-                10, debugStart + debugSize *4, mPaint);
-        mCanvas.drawText("Bob abajo: " +
-                        mBob.getRect().bottom ,
-                10,debugStart + debugSize *5, mPaint);
-        mCanvas.drawText("Bob centro X: " +
-                        mBob.getRect().centerX() ,
-                10,debugStart + debugSize *6, mPaint);
-        mCanvas.drawText("Bob centro Y: " +
-                        mBob.getRect().centerY() ,
-                10, debugStart + debugSize *7, mPaint);*/
     }
-
 
 
 }
